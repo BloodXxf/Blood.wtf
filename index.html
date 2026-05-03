@@ -274,7 +274,7 @@
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
-            z-index: 999;
+            z-index: 10000;
             transform: translate(-50%, -50%);
             transition: width 0.2s, height 0.2s;
         }
@@ -286,7 +286,7 @@
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
-            z-index: 998;
+            z-index: 9999;
             transform: translate(-50%, -50%);
             transition: width 0.2s, height 0.2s, background-color 0.2s;
         }
@@ -325,6 +325,143 @@
             opacity: 0.3;
             filter: blur(5px);
             pointer-events: none;
+        }
+
+        /* Chat Styles */
+        #chat-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--blood-red);
+            color: var(--bright-red);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        #chat-toggle:hover {
+            box-shadow: 0 0 25px var(--bright-red);
+            transform: scale(1.05);
+        }
+
+        #chat-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 300px;
+            height: 450px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        #chat-header {
+            padding: 15px;
+            background: rgba(153, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+            font-weight: 700;
+            color: var(--bright-red);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+
+        .message .user {
+            color: var(--bright-red);
+            font-weight: 700;
+            margin-right: 5px;
+        }
+
+        #chat-input-area {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 0, 0, 0.2);
+            display: flex;
+            gap: 10px;
+        }
+
+        #chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        #chat-send {
+            background: var(--blood-red);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #name-prompt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-base);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 1001;
+        }
+
+        #name-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--blood-red);
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 15px 0;
+            width: 80%;
+            text-align: center;
+        }
+
+        #set-name-btn {
+            background: var(--bright-red);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 800;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         /* Enter Screen Styles */
@@ -370,8 +507,33 @@
 
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;800&display=swap');
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 </head>
 <body>
+    <!-- Chat Button -->
+    <button id="chat-toggle" onclick="toggleChat()">Chat</button>
+
+    <!-- Chat Window -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <span>PUBLIC CHAT</span>
+            <span style="cursor:pointer" onclick="toggleChat()">×</span>
+        </div>
+        
+        <div id="name-prompt" id="name-screen">
+            <h2 style="color: var(--bright-red); font-size: 1.2rem;">IDENTIFY YOURSELF</h2>
+            <input type="text" id="name-input" placeholder="Enter nickname..." maxlength="15">
+            <button id="set-name-btn" onclick="setNickname()">JOIN CHAT</button>
+        </div>
+
+        <div id="chat-messages"></div>
+        
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type a message..." maxlength="100">
+            <button id="chat-send" onclick="sendMessage()">SEND</button>
+        </div>
+    </div>
+
     <!-- Enter Screen -->
     <div id="enter-screen">
         <button class="enter-btn" onclick="enterSite()">Enter</button>
@@ -601,6 +763,60 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        });
+
+        // Chat Logic
+        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+        const chatNode = gun.get('vaz_bio_public_chat_v1');
+        let nickname = localStorage.getItem('chat-nick');
+
+        if (nickname) {
+            document.getElementById('name-prompt').style.display = 'none';
+        }
+
+        function toggleChat() {
+            const chat = document.getElementById('chat-container');
+            chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function setNickname() {
+            const input = document.getElementById('name-input');
+            const nick = input.value.trim();
+            if (nick) {
+                nickname = nick;
+                localStorage.setItem('chat-nick', nick);
+                document.getElementById('name-prompt').style.display = 'none';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (msg && nickname) {
+                chatNode.set({
+                    user: nickname,
+                    text: msg,
+                    time: Date.now()
+                });
+                input.value = '';
+            }
+        }
+
+        // Listen for messages
+        chatNode.map().once((data, id) => {
+            if (data && data.text && data.user) {
+                const messagesDiv = document.getElementById('chat-messages');
+                const msgEl = document.createElement('div');
+                msgEl.className = 'message';
+                msgEl.innerHTML = `<span class="user">${data.user}:</span> ${data.text}`;
+                messagesDiv.appendChild(msgEl);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        });
+
+        // Allow Enter key to send message
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
         });
 
         // Blood Dripping Animation Loop
