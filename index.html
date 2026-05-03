@@ -766,8 +766,13 @@
         });
 
         // Chat Logic
-        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-        const chatNode = gun.get('vaz_bio_public_chat_v1');
+        const gun = Gun([
+            'https://gun-manhattan.herokuapp.com/gun',
+            'https://gunjs.herokuapp.com/gun',
+            'https://gun-us.herokuapp.com/gun',
+            'https://gun-eu.herokuapp.com/gun'
+        ]);
+        const chatNode = gun.get('vaz_bio_public_chat_v2'); // Changed version to clear any stale data
         let nickname = localStorage.getItem('chat-nick');
 
         if (nickname) {
@@ -803,11 +808,15 @@
         }
 
         // Listen for messages
-        chatNode.map().once((data, id) => {
+        chatNode.map().on((data, id) => {
             if (data && data.text && data.user) {
                 const messagesDiv = document.getElementById('chat-messages');
+                // Check if message already exists to avoid duplicates from multiple peers
+                if (document.getElementById(id)) return;
+                
                 const msgEl = document.createElement('div');
                 msgEl.className = 'message';
+                msgEl.id = id;
                 msgEl.innerHTML = `<span class="user">${data.user}:</span> ${data.text}`;
                 messagesDiv.appendChild(msgEl);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
