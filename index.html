@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaz | Online Presence</title>
+    <style>
+        :root {
+            --bg-base: #000000;
+            --blood-red: #990000;
+            --bright-red: #ff0000;
+            --card-bg: rgba(15, 0, 0, 0.85);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            cursor: none; /* Custom cursor */
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Canvas for Particle Background */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            perspective: 1000px;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        /* Glowing Orb Behind Avatar */
+        .avatar-wrapper {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 2rem;
+            transform: translateZ(30px);
+        }
+
+        .avatar-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: var(--blood-red);
+            filter: blur(40px);
+            opacity: 0.5;
+            border-radius: 50%;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.3; filter: blur(30px); }
+            100% { opacity: 0.6; filter: blur(50px); }
+        }
+
+        .avatar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            background: #111;
+        }
+
+        .glitch-wrapper {
+            transform: translateZ(40px);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Typing effect for subtitle */
+        .subtitle {
+            color: var(--bright-red);
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .typing-text {
+            border-right: 2px solid var(--bright-red);
+            white-space: nowrap;
+            overflow: hidden;
+            animation: blinkCursor 0.75s step-end infinite;
+        }
+
+        @keyframes blinkCursor {
+            from, to { border-color: transparent }
+            50% { border-color: var(--neon-green); }
+        }
+
+        /* Stats / Info sections */
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+            transform: translateZ(20px);
+            margin-bottom: 2rem;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--neon-blue);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+            transform-origin: bottom;
+        }
+
+        .info-box.friend-box::before {
+            background: #ff007f;
+        }
+
+        .info-box:hover::before {
+            transform: scaleY(1);
+        }
+
+        .info-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .info-icon {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(153, 0, 0, 0.2);
+            color: var(--bright-red);
+            border-radius: 8px;
+        }
+
+        .friend-box .info-icon {
+            background: rgba(255, 0, 127, 0.1);
+            color: #ff007f;
+        }
+
+        .info-content h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-content p {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Cyber Buttons */
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transform: translateZ(30px);
+        }
+
+        .cyber-btn {
+            background: transparent;
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: var(--blood-red);
+            z-index: -1;
+            transition: width 0.3s ease;
+        }
+
+        .cyber-btn:hover {
+            color: var(--text-main);
+            border-color: var(--bright-red);
+            box-shadow: 0 0 20px rgba(153, 0, 0, 0.6);
+        }
+
+        .cyber-btn:hover::before {
+            width: 100%;
+        }
+
+        /* Custom Cursor */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--bright-red);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--bright-red);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* Blood Drip Styles */
+        .blood-drip-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .drip {
+            position: absolute;
+            top: -20px;
+            width: 4px;
+            background: linear-gradient(to bottom, transparent, var(--blood-red));
+            border-radius: 0 0 4px 4px;
+            animation: drip-animation linear infinite;
+        }
+
+        @keyframes drip-animation {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh); opacity: 0; }
+        }
+
+        .splat {
+            position: absolute;
+            background: var(--blood-red);
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        /* Enter Screen Styles */
+        #enter-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        #enter-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .enter-btn {
+            background: transparent;
+            color: var(--bright-red);
+            border: 2px solid var(--bright-red);
+            padding: 1.5rem 3rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .enter-btn:hover {
+            background: var(--bright-red);
+            color: #000;
+            box-shadow: 0 0 50px var(--bright-red);
+            transform: scale(1.1);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;800&display=swap');
+    </style>
+</head>
+<body>
+    <!-- Enter Screen -->
+    <div id="enter-screen">
+        <button class="enter-btn" onclick="enterSite()">Enter</button>
+    </div>
+
+    <!-- Background Music -->
+    <video id="bg-music" loop style="display: none;">
+        <source src="Lyrics + Vietsub ON DAT BXTCH! - Lumi Athena ft. Masonn Deforest - Alibanana (720p).mp4" type="video/mp4">
+    </video>
+
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particles-js"></canvas>
+    
+    <div class="blood-drip-container" id="blood-drips"></div>
+
+    <div class="main-container">
+        <div class="glass-card" id="tilt-card">
+            
+            <div class="avatar-wrapper">
+                <div class="avatar-glow"></div>
+                <img src="download (21).jpg" alt="Vaz" class="avatar">
+            </div>
+
+            <div class="glitch-wrapper">
+                <h1>VAZ</h1>
+                <div class="subtitle">
+                    <span class="typing-text" id="typewriter"></span>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-icon">
+                        <img src="handprint.png" alt="icon" style="width: 70%; height: 70%; object-fit: contain;">
+                    </div>
+                    <div class="info-content">
+                        <h3>Now Playing</h3>
+                        <p>Roblox Rivals</p>
+                    </div>
+                </div>
+
+                <div class="info-box friend-box">
+                    <div class="info-icon">
+                        <img src="handprint.png" alt="icon" style="width: 70%; height: 70%; object-fit: contain;">
+                    </div>
+                    <div class="info-content">
+                        <h3>Alliance</h3>
+                        <p>Good friends with qis</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="links-container">
+                <a href="https://matrixhubs.shop/" class="cyber-btn" target="_blank">MATRIX CONFIGS</a>
+                <a href="https://www.roblox.com/users/9195871292/profile?friendshipSourceType=PlayerSearch" class="cyber-btn" target="_blank">ROBLOX PROFILE</a>
+                <a href="https://discord.gg/zYgmEUy9HK" class="cyber-btn" target="_blank">DISCORD</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Enter Site Logic
+        function enterSite() {
+            const screen = document.getElementById('enter-screen');
+            const video = document.getElementById('bg-music');
+            
+            screen.classList.add('fade-out');
+            video.play();
+            
+            // Start the typewriter effect only after entering
+            setTimeout(typeWriter, 500);
+        }
+
+        // Custom Cursor Logic
+        const dot = document.getElementById('cursor-dot');
+        const outline = document.getElementById('cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            dot.style.left = `${posX}px`;
+            dot.style.top = `${posY}px`;
+
+            // Add slight delay to outline for smooth effect
+            outline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Add hover effects to interactable elements
+        const interactables = document.querySelectorAll('a, .info-box');
+        interactables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                outline.style.width = '60px';
+                outline.style.height = '60px';
+                outline.style.backgroundColor = 'rgba(153, 0, 0, 0.2)';
+            });
+            el.addEventListener('mouseleave', () => {
+                outline.style.width = '40px';
+                outline.style.height = '40px';
+                outline.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // Typewriter Effect
+        const text = "#1 Matrix User & Configger";
+        const typewriterEl = document.getElementById('typewriter');
+        let i = 0;
+
+        function typeWriter() {
+            if (i < text.length) {
+                typewriterEl.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }
+        }
+        // Removed automatic typewriter call to trigger it on enter instead
+        // setTimeout(typeWriter, 500);
+
+        // 3D Tilt Effect on Card
+        const card = document.getElementById('tilt-card');
+        const container = document.querySelector('.main-container');
+
+        container.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element
+            const y = e.clientY - rect.top;  // y position within the element
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -10; // Max rotation 10deg
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        container.addEventListener('mouseleave', () => {
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+            card.style.transition = 'transform 0.5s ease';
+        });
+
+        container.addEventListener('mouseenter', () => {
+            card.style.transition = 'none';
+        });
+
+        // Simple Matrix-style Particle System
+        const canvas = document.getElementById('particles-js');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 2 + 1; // Falling down like blood
+                this.color = Math.random() > 0.5 ? '#990000' : '#660000';
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.01;
+                
+                // Wrap around edges
+                if(this.x < 0) this.x = canvas.width;
+                if(this.x > canvas.width) this.x = 0;
+                if(this.y < 0) this.y = canvas.height;
+                if(this.y > canvas.height) this.y = 0;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                
+                // Connect particles
+                for(let j = i; j < particlesArray.length; j++) {
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if(distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = particlesArray[i].color;
+                        ctx.globalAlpha = 1 - (distance/100);
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Blood Dripping Animation Loop
+        const dripContainer = document.getElementById('blood-drips');
+        function createDrip() {
+            const drip = document.createElement('div');
+            drip.className = 'drip';
+            drip.style.left = Math.random() * 100 + 'vw';
+            drip.style.height = Math.random() * 100 + 50 + 'px';
+            drip.style.animationDuration = Math.random() * 2 + 3 + 's';
+            dripContainer.appendChild(drip);
+            
+            setTimeout(() => {
+                drip.remove();
+            }, 5000);
+        }
+        setInterval(createDrip, 300);
+
+        // Create random splats
+        for(let s=0; s<15; s++) {
+            const splat = document.createElement('div');
+            splat.className = 'splat';
+            const size = Math.random() * 150 + 50;
+            splat.style.width = size + 'px';
+            splat.style.height = size + 'px';
+            splat.style.left = Math.random() * 100 + 'vw';
+            splat.style.top = Math.random() * 100 + 'vh';
+            splat.style.transform = `scale(${Math.random() + 0.5}) rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(splat);
+        }
+
+    </script>
+</body>
+</html>
