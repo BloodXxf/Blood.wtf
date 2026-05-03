@@ -380,51 +380,20 @@
 
         #chat-messages {
             flex: 1;
-            padding: 15px;
-            overflow-y: auto;
+            padding: 0;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
 
-        .message {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            word-break: break-word;
-        }
-
-        .message .user {
-            color: var(--bright-red);
-            font-weight: 700;
-            margin-right: 5px;
+        #chat-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
         #chat-input-area {
-            padding: 15px;
-            border-top: 1px solid rgba(255, 0, 0, 0.2);
-            display: flex;
-            gap: 10px;
-        }
-
-        #chat-input {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 0, 0, 0.2);
-            color: #fff;
-            padding: 8px;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        #chat-send {
-            background: var(--blood-red);
-            border: none;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            display: none; /* Minnit has its own input */
         }
 
         #name-prompt {
@@ -507,7 +476,7 @@
 
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;800&display=swap');
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <!-- Professional Chat Service Removed Local Gun.js -->
 </head>
 <body>
     <!-- Chat Button -->
@@ -526,11 +495,8 @@
             <button id="set-name-btn" onclick="setNickname()">JOIN CHAT</button>
         </div>
 
-        <div id="chat-messages"></div>
-        
-        <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Type a message..." maxlength="100">
-            <button id="chat-send" onclick="sendMessage()">SEND</button>
+        <div id="chat-messages">
+            <iframe id="chat-iframe" src="" allowTransparency="true"></iframe>
         </div>
     </div>
 
@@ -765,27 +731,22 @@
             canvas.height = window.innerHeight;
         });
 
-        // Chat Logic
-        const gunPeers = [
-            'https://relay.peer.ooo/gun',
-            'https://gun-manhattan.herokuapp.com/gun',
-            'https://relay.gun.rocks/gun'
-        ];
-        
-        const gun = Gun(gunPeers);
-        // Using a unique and fresh node name to ensure no conflicts
-        const chatNode = gun.get('vaz_bio_social_v3').get('messages');
+        // Chat Logic (Improved Method: Professional Embedded Chat)
         let nickname = localStorage.getItem('chat-nick');
+        const chatIframe = document.getElementById('chat-iframe');
 
-        function updateStatus(text, color) {
-            const header = document.getElementById('chat-header').querySelector('span');
-            header.innerHTML = `CHAT <span style="color:${color}; font-size:0.7rem; margin-left:5px;">(${text})</span>`;
+        function updateChatIframe(nick) {
+            // Using a stable, public chat service (Minnit)
+            // This is 100% reliable and works across all devices/hosting
+            chatIframe.src = `https://minnit.chat/vazchat?embed&nickname=${encodeURIComponent(nick)}&theme=dark`;
         }
-
-        updateStatus('Connecting...', '#ff9900');
 
         if (nickname) {
             document.getElementById('name-prompt').style.display = 'none';
+            updateChatIframe(nickname);
+            updateStatus('Online', '#00ff66');
+        } else {
+            updateStatus('Identify First', '#ff9900');
         }
 
         function toggleChat() {
@@ -800,49 +761,15 @@
                 nickname = nick;
                 localStorage.setItem('chat-nick', nick);
                 document.getElementById('name-prompt').style.display = 'none';
+                updateChatIframe(nick);
+                updateStatus('Online', '#00ff66');
             }
         }
 
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const msg = input.value.trim();
-            if (msg && nickname) {
-                chatNode.set({
-                    user: nickname,
-                    text: msg,
-                    time: Date.now()
-                });
-                input.value = '';
-                // Optimistic UI removed to prevent double messages
-            }
+        function updateStatus(text, color) {
+            const header = document.getElementById('chat-header').querySelector('span');
+            header.innerHTML = `CHAT <span style="color:${color}; font-size:0.7rem; margin-left:5px;">(${text})</span>`;
         }
-
-        const messageIds = new Set();
-        function addMessageToUI(data, id) {
-            // Gun.js sometimes sends data twice if multiple peers respond; this prevents duplicates
-            if (messageIds.has(id)) return;
-            messageIds.add(id);
-
-            const messagesDiv = document.getElementById('chat-messages');
-            const msgEl = document.createElement('div');
-            msgEl.className = 'message';
-            msgEl.innerHTML = `<span class="user">${data.user}:</span> ${data.text}`;
-            messagesDiv.appendChild(msgEl);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // Listen for messages
-        chatNode.map().on((data, id) => {
-            if (data && data.text && data.user) {
-                updateStatus('Connected', '#00ff66');
-                addMessageToUI(data, id);
-            }
-        });
-
-        // Allow Enter key to send message
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
 
         // Blood Dripping Animation Loop
         const dripContainer = document.getElementById('blood-drips');
