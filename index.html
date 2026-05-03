@@ -520,9 +520,9 @@
             <span style="cursor:pointer" onclick="toggleChat()">×</span>
         </div>
         
-        <div id="name-prompt" id="name-screen">
+        <div id="name-prompt">
             <h2 style="color: var(--bright-red); font-size: 1.2rem;">IDENTIFY YOURSELF</h2>
-            <input type="text" id="name-input" placeholder="Enter nickname..." maxlength="15">
+            <input type="text" id="name-input" placeholder="Enter nickname..." maxlength="15" onkeypress="if(event.key === 'Enter') setNickname()">
             <button id="set-name-btn" onclick="setNickname()">JOIN CHAT</button>
         </div>
 
