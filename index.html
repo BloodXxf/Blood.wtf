@@ -769,12 +769,12 @@
         const gunPeers = [
             'https://relay.peer.ooo/gun',
             'https://gun-manhattan.herokuapp.com/gun',
-            'https://relay.gun.rocks/gun',
-            'https://gunjs.herokuapp.com/gun'
+            'https://relay.gun.rocks/gun'
         ];
         
         const gun = Gun(gunPeers);
-        const chatNode = gun.get('vaz_bio_chat_final_v1').get('messages');
+        // Using a unique and fresh node name to ensure no conflicts
+        const chatNode = gun.get('vaz_bio_social_v3').get('messages');
         let nickname = localStorage.getItem('chat-nick');
 
         function updateStatus(text, color) {
@@ -807,20 +807,19 @@
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
             if (msg && nickname) {
-                const messageData = {
+                chatNode.set({
                     user: nickname,
                     text: msg,
                     time: Date.now()
-                };
-                chatNode.set(messageData);
+                });
                 input.value = '';
-                // Optimistically add own message
-                addMessageToUI(messageData, 'own-' + Date.now());
+                // Optimistic UI removed to prevent double messages
             }
         }
 
         const messageIds = new Set();
         function addMessageToUI(data, id) {
+            // Gun.js sometimes sends data twice if multiple peers respond; this prevents duplicates
             if (messageIds.has(id)) return;
             messageIds.add(id);
 
