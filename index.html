@@ -766,14 +766,23 @@
         });
 
         // Chat Logic
-        const gun = Gun([
+        const gunPeers = [
+            'https://relay.peer.ooo/gun',
             'https://gun-manhattan.herokuapp.com/gun',
-            'https://gunjs.herokuapp.com/gun',
-            'https://gun-us.herokuapp.com/gun',
-            'https://gun-eu.herokuapp.com/gun'
-        ]);
-        const chatNode = gun.get('vaz_bio_public_chat_v2'); // Changed version to clear any stale data
+            'https://relay.gun.rocks/gun',
+            'https://gunjs.herokuapp.com/gun'
+        ];
+        
+        const gun = Gun(gunPeers);
+        const chatNode = gun.get('vaz_bio_chat_final_v1').get('messages');
         let nickname = localStorage.getItem('chat-nick');
+
+        function updateStatus(text, color) {
+            const header = document.getElementById('chat-header').querySelector('span');
+            header.innerHTML = `CHAT <span style="color:${color}; font-size:0.7rem; margin-left:5px;">(${text})</span>`;
+        }
+
+        updateStatus('Connecting...', '#ff9900');
 
         if (nickname) {
             document.getElementById('name-prompt').style.display = 'none';
@@ -798,28 +807,36 @@
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
             if (msg && nickname) {
-                chatNode.set({
+                const messageData = {
                     user: nickname,
                     text: msg,
                     time: Date.now()
-                });
+                };
+                chatNode.set(messageData);
                 input.value = '';
+                // Optimistically add own message
+                addMessageToUI(messageData, 'own-' + Date.now());
             }
+        }
+
+        const messageIds = new Set();
+        function addMessageToUI(data, id) {
+            if (messageIds.has(id)) return;
+            messageIds.add(id);
+
+            const messagesDiv = document.getElementById('chat-messages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'message';
+            msgEl.innerHTML = `<span class="user">${data.user}:</span> ${data.text}`;
+            messagesDiv.appendChild(msgEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
         // Listen for messages
         chatNode.map().on((data, id) => {
             if (data && data.text && data.user) {
-                const messagesDiv = document.getElementById('chat-messages');
-                // Check if message already exists to avoid duplicates from multiple peers
-                if (document.getElementById(id)) return;
-                
-                const msgEl = document.createElement('div');
-                msgEl.className = 'message';
-                msgEl.id = id;
-                msgEl.innerHTML = `<span class="user">${data.user}:</span> ${data.text}`;
-                messagesDiv.appendChild(msgEl);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                updateStatus('Connected', '#00ff66');
+                addMessageToUI(data, id);
             }
         });
 
